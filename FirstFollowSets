@@ -1,0 +1,61 @@
+FIRST Sets:
+------------------------
+
+FIRST(#1) = {a-z, A-Z, '('}
+
+FIRST(#2) = {'/'}
+FIRST(#3) = {ε}
+
+FIRST(#4) = {a-z, A-Z, '('}
+
+FIRST(#5) = {'**'}
+FIRST(#6) = {ε}
+
+FIRST(#7) = {a-z, A-Z}
+FIRST(#8) = {'('}
+
+FIRST(#9) = {a-z, A-Z}
+
+FIRST(#10) = {a-z, A-Z}
+
+FIRST(#11) = {ε}
+
+FIRST(#12) = {a-z}
+FIRST(#13) = {A-Z}
+
+
+FOLLOW Sets:
+----------------------
+FOLLOW(exp) = {')', $}
+FOLLOW(expTail) = {')', $}
+FOLLOW(term) = {'/', ')', $ }
+FOLLOW(termTail) = {'/', ')', $}
+FOLLOW(factor) = {'**', '/', ')', $}
+FOLLOW(str) = {'**', '/', ')', $}
+FOLLOW(strTail) = {'**', '/', ')', $}
+FOLLOW(char) = {a-z, A-Z, '**', '/', ')', $}   (FIRST + FOLLOW strTail)
+
+
+FIRST+ Sets:
+----------------------
+FIRST+(#1) = FIRST(#1) = {a-z, A-Z, '('}
+
+FIRST+(#2) = FIRST(#2) = {'/'}
+FIRST+(#3) = FIRST(#3) U FOLLOW(expTail) \ {ε} = {')', $}
+
+FIRST+(#4) = FIRST(#4) = {a-z, A-Z, '('}
+
+FIRST+(#5) = FIRST(#5) = {'**'}
+FIRST+(#6) = FIRST(#6) U FOLLOW(termTail) \ {ε} = {'/', ')', $}
+
+FIRST+(#7) = FIRST(#7) = {a-z, A-Z}
+FIRST+(#8) = FIRST(#8) = {'('}
+
+FIRST+(#9) = FIRST(#9) = {a-z, A-Z}
+
+FIRST+(#10) = FIRST(#10) = {a-z, A-Z}
+
+FIRST+(#11) = FIRST(#11) U FOLLOW(strTail) \ {ε} = {'**', '/', ')', $}
+
+FIRST+(#12) = FIRST(#12) = {a-z}
+FIRST+(#13) = FIRST(#13) = {A-Z}
