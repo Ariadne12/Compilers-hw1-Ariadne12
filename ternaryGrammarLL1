@@ -1,0 +1,20 @@
+1. exp -> term expTail
+
+2. expTail -> / term expTail
+        | ε
+
+3. term -> factor termTail
+
+4. termTail -> ** factor termTail
+        | ε
+
+5. factor -> str
+6.        | (exp)
+
+7. str -> char strTail
+
+8. strTail -> str
+9.          | ε
+
+10. char -> a-z 
+11.      | A-Z

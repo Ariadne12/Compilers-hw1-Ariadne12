@@ -13,6 +13,29 @@
 
 
 Προβληματα:
-exp -> exp op exp , left recursion
+1) ambiguity στο str, FIRST(#6) = FIRST(#7)
 
-str, ambiguity, FIRST(#6) = FIRST(#7)
+2) προσθηκη προτεραιοτητας:
+Operator ** has higher priority than operator /
+
+higher precedence –
+deeper in the tree
+
+οπότε μετατρέπουμε το exp σε:
+
+exp -> exp / term
+    | term
+
+term -> term ** factor
+    | factor
+
+factor -> str
+        | (exp)
+
+3) Τώρα πρέπει να κανουμε eliminate το left recursion
+
+
+Αυτα στον κώδικα:
++ The operator ** is left-associative
+
++ The operator / is right-associative
