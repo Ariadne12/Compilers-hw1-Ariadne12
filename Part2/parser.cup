@@ -1,0 +1,97 @@
+/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
+/**
+ *  Package and Import Specifications
+ */
+import java_cup.runtime.*;
+
+/**
+ *  Usercode Components
+ */
+parser code {:
+    // Connect this parser to a scanner!
+    Scanner s;
+    Parser(Scanner s){ this.s=s; }
+
+    // Whether string1 is a prefix of string2
+    public static boolean is_prefix_of(String str1, String str2){
+        return str2.startsWith(str1);
+    }
+
+    // Whether string1 is a suffix of string2.
+    public static boolean is_suffix_of(String str1, String str2){
+        return str2.endsWith(str1);
+    }
+
+    
+:}
+
+/* define how to connect to the scanner! */
+scan with {: return s.next_token(); :};
+
+/**
+ *  Symbol Lists
+ */
+
+/* Terminals (tokens returned by the scanner). */
+terminal            IF, ELSE, PREFIX, SUFFIX;
+terminal            PLUS, LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
+terminal String     ID, STRING_LITERAL;        // our scanner provides numbers as strings
+
+/*  Non terminals */
+non terminal            expr_list;
+non terminal Integer    expr;      // used to store evaluated subexpressions
+
+/**
+ *  Precedence Declarations
+ */
+precedence left PLUS;
+precedence left IF;
+
+/**
+ *  The Grammar Rules
+ */
+program ::= functions statements
+
+functions ::= function_definition functions
+            | empty
+
+function_definition ::= ID LPAREN params_list RPAREN LBRACE expression RBRACE
+
+params ::= params_list
+        | empty
+
+params_list ::= ID
+            | params_list COMMA ID
+
+expression ::= expr
+            | empty     //?
+
+expr ::= IF LPAREN expr RPAREN expr ELSE expr
+        | STRING
+        | ID
+        | expr PLUS expr
+        | expr PREFIX expr
+        | expr SUFFIX expr
+        | function_call
+
+statements ::= expr statements
+            | empty
+
+function_call ::= ID LPAREN args RPAREN
+
+args ::= args_list
+        | empty
+
+args_list ::= expr
+            | args_list COMMA expr
+
+
+expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);         :}
+            | expr:e SEMI                   {: System.out.println(e);         :}
+;
+expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;                :}
+             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;                :}
+             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;                :}
+             | LPAREN expr:e RPAREN	        {: RESULT = e;                    :}
+             | STRING_LITERAL:s	            {: RESULT = Integer.parseInt(s);  :}
+             ;
