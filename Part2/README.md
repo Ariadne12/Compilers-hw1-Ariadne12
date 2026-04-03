@@ -64,3 +64,42 @@ In the case of a function nested in another it can use the parameters of the out
 An argument can also be the check of prefix and suffix, since the result of that can be used inside the function in an if/else condition.
 
 So it's technically an expr.
+
+
+Parentheses in the grammar: control structure (how expressions are parsed)
+Parentheses in Java code (RESULT = ...): only matter if needed for operator precedence
+
+here all parentheses are needed for correct java
+
+
+Θα πρότεινα να αλλάξεις το όνομα της κλάσης του παραγόμενου προγράμματος σε κάτι άλλο, πχ MyMain. Με αυτήν την αλλαγή, θα μπορείς να τυπώνεις τον παραγόμενο Java κώδικα σε ένα αντίστοιχο MyMain.java χωρίς να έχεις conflict με το όνομα του μεταφραστή σου(και μας διευκολύνεις και εμάς στη διόρθωση).
+
+επισης προβλημα το if ουσιαστικα μεσα του μπορει  να δεχθει μόνο το prefix suffix ουσιαστικα. αρα πρεπει να το λλαξω
+
+
+Σίγουρα θα θεωρείται σφάλμα αν υπάρχει οποιοδήποτε σωστό input, το οποίο δεν μεταγλωτίζεται σωστά.
+οποτε θελουμε false positives 
+
+Για ευκολια κάνω return το ternary στη συναρτηση αντι να δηλωσω ολοκληρο if μέσα της κλπ (αρκετα περιπλοκο) 
+
+suffix - prefix : άρα αναγκαστικά αποτιμούνται τελευταία.
+αφου αναγκαστικα, δε χρειαζεται να κανω κατι ετσι?
+
+
+precedences:
+
+left-> reduce
+if the input is a string of additions, like 3 + 4 + 5 + 6 + 7, the parser will always reduce them from left to right, in this case, starting with 3 + 4
+right-> shifted onto the stack. hence, the reductions will take place from right to left. 
+So the 6 + 7 would be reduced first in the above string. I
+nonassoc-> two consecutive occurrences of equal precedence non-associative terminals generates an error. This is useful for comparison operations. if the input string is 6 == 7 == 8 == 9, the parser should generate an error, if '==' is declared as nonassoc
+
+RESULT
+The RESULT variable refers directly to the value of the non-terminal to which a rule reduces, rather than to the object on the parse stack. Hence, RESULT is of the same type the non-terminal to which it reduces
+
+Terminal symbols are symbols that cannot be replaced by antyhting else on the vocab. so anything that appears on the left?
+
+Things i need to consider:
+- functions cant have 
+- να βαλω το ternary σε παρενθεσεις???? δκ
+- nmz na αλλαξω τα ονοματα κτ functions list dk

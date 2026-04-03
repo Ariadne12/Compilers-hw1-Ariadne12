@@ -71,7 +71,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 /* identifiers */
  [a-zA-Z][a-zA-Z0-9_]*          { return symbol(sym.ID, yytext()); }
 /* operators */
- "+"            { return symbol(sym.PLUS); }
+ "+"            { return symbol(sym.CONCAT); }
  "("            { return symbol(sym.LPAREN); }
  ")"            { return symbol(sym.RPAREN); }
  "{"            { return symbol(sym.LBRACE); }

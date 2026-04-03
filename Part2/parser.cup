@@ -1,4 +1,3 @@
-/* Simple +/-/* expression language; parser evaluates constant expressions on the fly*/
 /**
  *  Package and Import Specifications
  */
@@ -11,18 +10,6 @@ parser code {:
     // Connect this parser to a scanner!
     Scanner s;
     Parser(Scanner s){ this.s=s; }
-
-    // Whether string1 is a prefix of string2
-    public static boolean is_prefix_of(String str1, String str2){
-        return str2.startsWith(str1);
-    }
-
-    // Whether string1 is a suffix of string2.
-    public static boolean is_suffix_of(String str1, String str2){
-        return str2.endsWith(str1);
-    }
-
-    
 :}
 
 /* define how to connect to the scanner! */
@@ -34,64 +21,78 @@ scan with {: return s.next_token(); :};
 
 /* Terminals (tokens returned by the scanner). */
 terminal            IF, ELSE, PREFIX, SUFFIX;
-terminal            PLUS, LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
-terminal String     ID, STRING_LITERAL;        // our scanner provides numbers as strings
+terminal            CONCAT, LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
+terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
-non terminal            expr_list;
-non terminal Integer    expr;      // used to store evaluated subexpressions
+non terminal String program, functions, function_definition;
+non terminal String statements, expr, bool_expr, function_call;
+non terminal String params, params_list, args, args_list;
 
 /**
  *  Precedence Declarations
  */
-precedence left PLUS;
+precedence left CONCAT;
 precedence left IF;
 
 /**
  *  The Grammar Rules
  */
-program ::= functions statements
+program ::= functions:f statements:s                    
+        {: RESULT = 
+            "public class Main {\n" + 
+            "public static void main(String[] args) {\n" + 
+            s +
+            "}\n\n" +
+            f +
+            "}\n";
 
-functions ::= function_definition functions
-            | empty
-
-function_definition ::= ID LPAREN params_list RPAREN LBRACE expression RBRACE
-
-params ::= params_list
-        | empty
-
-params_list ::= ID
-            | params_list COMMA ID
-
-expression ::= expr
-            | empty     //?
-
-expr ::= IF LPAREN expr RPAREN expr ELSE expr
-        | STRING
-        | ID
-        | expr PLUS expr
-        | expr PREFIX expr
-        | expr SUFFIX expr
-        | function_call
-
-statements ::= expr statements
-            | empty
-
-function_call ::= ID LPAREN args RPAREN
-
-args ::= args_list
-        | empty
-
-args_list ::= expr
-            | args_list COMMA expr
-
-
-expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);         :}
-            | expr:e SEMI                   {: System.out.println(e);         :}
+            System.out.println(RESULT);
+        :}
 ;
-expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;                :}
-             | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;                :}
-             | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;                :}
-             | LPAREN expr:e RPAREN	        {: RESULT = e;                    :}
-             | STRING_LITERAL:s	            {: RESULT = Integer.parseInt(s);  :}
-             ;
+
+functions ::= function_definition:fd functions:f        {: RESULT = fd + "\n" + f; :}
+            | /* empty */                               {: RESULT = ""; :}
+;
+
+function_definition ::= ID:id LPAREN params_list:pl RPAREN LBRACE expr:e RBRACE
+                        {: 
+                            RESULT = "public static String " + id + "(" + pl + ") {\nreturn " + e + ";\n}\n"; 
+                        :}
+;
+
+params ::= params_list:pl                               {: RESULT = pl; :}
+        | /* empty */                                   {: RESULT = ""; :}
+;
+
+params_list ::= ID:id                                   {: RESULT = "String " + id; :}
+            | params_list:pl COMMA ID:id                {: RESULT = pl + ", String " + id; :}
+;
+
+expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
+        | ID:id                                         {: RESULT = id; :}
+        | expr:e1 CONCAT expr:e2                        {: RESULT = e1 + " + " + e2; :}
+        | bool_expr:be                                  {: RESULT = be; :}
+        | IF LPAREN bool_expr:c RPAREN expr:e1 ELSE expr:e2  {: RESULT = c + "?" + e1 + ":" + e2; :}
+        | function_call:fc                              {: RESULT = fc; :}
+;
+
+bool_expr ::= expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
+            | expr:e1 SUFFIX expr:e2                        {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
+            | ID
+;
+
+statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + s; :}
+            | /* empty */                               {: RESULT = ""; :}
+;
+
+function_call ::= ID:id LPAREN args:a RPAREN            {: RESULT = id + "(" + a + ")"; :}
+;
+
+args ::= args_list :al                                  {: RESULT = al; :}
+        | /* empty */                                   {: RESULT = ""; :}
+;
+
+args_list ::= expr:e                                    {: RESULT = e; :}
+            | args_list:al COMMA expr:e                 {: RESULT = al + "," + e; :}
+;
