@@ -653,8 +653,7 @@ private Symbol symbol(int type, Object value) {
             // fall through
           case 23: break;
           case 3: 
-            { System.out.println("TOKEN: " + yytext());
-                                 return symbol(sym.ID, yytext());
+            { return symbol(sym.ID, yytext());
             } 
             // fall through
           case 24: break;
@@ -669,8 +668,7 @@ private Symbol symbol(int type, Object value) {
             // fall through
           case 26: break;
           case 6: 
-            { System.out.println("TOKEN: " + yytext());
-                  return symbol(sym.RPAREN);
+            { return symbol(sym.RPAREN);
             } 
             // fall through
           case 27: break;

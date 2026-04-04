@@ -27,7 +27,7 @@ terminal String     ID, STRING_LITERAL;
 /*  Non terminals */
 non terminal String program, functions, function_definition;
 non terminal String statements, expr, function_call, cond;
-non terminal String params, params_list, args, args_list;
+non terminal String args, args_list;
 
 /**
  *  Precedence Declarations
@@ -52,7 +52,7 @@ program ::= functions:f statements:s
         :}
 ;
 
-functions ::= functions:f function_definition:fd        {: RESULT = fd + "\n" + f; :}
+functions ::= functions:f function_definition:fd        {: RESULT = f + fd + "\n"; :}
            | /* empty */                                {: RESULT = ""; :}
 ;
 
