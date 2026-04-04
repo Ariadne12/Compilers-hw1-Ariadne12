@@ -26,7 +26,7 @@ terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
 non terminal String program, functions, function_definition;
-non terminal String statements, expr, function_call;
+non terminal String statements, expr, function_call, cond;
 non terminal String params, params_list, args, args_list;
 
 /**
@@ -52,14 +52,15 @@ program ::= functions:f statements:s
         :}
 ;
 
-functions ::= function_definition:fd functions:f        {: RESULT = fd + "\n" + f; :}
-           | function_definition:fd                     {: RESULT = fd + "\n"; :}
+functions ::= functions:f function_definition:fd        {: RESULT = fd + "\n" + f; :}
+           | /* empty */                                {: RESULT = ""; :}
 ;
 
 function_definition ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
-                        {: 
-                            RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
-                        :}
+                {: 
+                        
+                        RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
+                :}
 ;
 
 params ::= params_list:pl                               {: RESULT = pl; :}
@@ -73,10 +74,12 @@ params_list ::= ID:id                                   {: RESULT = "String " + 
 expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
         | ID:id                                         {: RESULT = id; :}
         | expr:e1 CONCAT expr:e2                        {: RESULT = e1 + " + " + e2; :}
-        | expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
-        | expr:e1 SUFFIX expr:e2                        {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
-        | IF LPAREN expr:c RPAREN expr:e1 ELSE expr:e2  {: RESULT = c + "?" + e1 + ":" + e2; :}
+        | IF LPAREN cond:c RPAREN expr:e1 ELSE expr:e2  {: RESULT = "(" + "(" + c + ")" + "?" + e1 + ":" + e2 + ")"; :}
         | function_call:fc                              {: RESULT = fc; :}
+;
+
+cond ::= expr:e1 SUFFIX expr:e2                         {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
+        | expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
 ;
 
 statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + s; :}
@@ -86,7 +89,7 @@ statements ::= expr:e statements:s                      {: RESULT = "System.out.
 function_call ::= ID:id LPAREN args:a RPAREN            {: RESULT = id + "(" + a + ")"; :}
 ;
 
-args ::= args_list :al                                  {: RESULT = al; :}
+args ::= args_list:al                                   {: RESULT = al; :}
         | /* empty */                                   {: RESULT = ""; :}
 ;
 
