@@ -1,10 +1,14 @@
 import java_cup.runtime.*;
 import java.io.*;
 
-class Main {
+public class Main {
     public static void main(String[] argv) throws Exception{
-        System.out.println("Please type your arithmethic expression:");
         Parser p = new Parser(new Scanner(new InputStreamReader(System.in)));
-        p.parse();
+        
+        Symbol resultSymbol = p.parse();
+        
+        // Cast the value to String and print it
+        String result = (String) resultSymbol.value;
+        System.out.println(result);
     }
 }

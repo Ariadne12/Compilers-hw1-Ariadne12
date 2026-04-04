@@ -21,7 +21,7 @@ scan with {: return s.next_token(); :};
 
 /* Terminals (tokens returned by the scanner). */
 terminal            IF, ELSE, PREFIX, SUFFIX;
-terminal            CONCAT, LPAREN, RPAREN, LBRACE, RBRACE, COMMA;
+terminal            CONCAT, LPAREN, RPAREN, RPAREN_LBRACE, RBRACE, COMMA;
 terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
@@ -53,12 +53,12 @@ program ::= functions:f statements:s
 ;
 
 functions ::= function_definition:fd functions:f        {: RESULT = fd + "\n" + f; :}
-            | /* empty */                               {: RESULT = ""; :}
+           | function_definition:fd                     {: RESULT = fd + "\n"; :}
 ;
 
-function_definition ::= ID:id LPAREN params_list:pl RPAREN LBRACE expr:e RBRACE
+function_definition ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
                         {: 
-                            RESULT = "public static String " + id + "(" + pl + ") {\nreturn " + e + ";\n}\n"; 
+                            RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
                         :}
 ;
 
@@ -79,7 +79,7 @@ expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "
         | function_call:fc                              {: RESULT = fc; :}
 ;
 
-statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + e; :}
+statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + s; :}
             | /* empty */                               {: RESULT = ""; :}
 ;
 
@@ -91,5 +91,5 @@ args ::= args_list :al                                  {: RESULT = al; :}
 ;
 
 args_list ::= expr:e                                    {: RESULT = e; :}
-            | args_list:al COMMA expr:e                 {: RESULT = al + "," + e; :}
+            | args_list:al COMMA expr:e                 {: RESULT = al + ", " + e; :}
 ;
