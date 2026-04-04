@@ -56,19 +56,22 @@ functions ::= functions:f function_definition:fd        {: RESULT = fd + "\n" + 
            | /* empty */                                {: RESULT = ""; :}
 ;
 
-function_definition ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
+function_definition ::= ID:id LPAREN args:a RPAREN_LBRACE expr:e RBRACE
                 {: 
-                        
-                        RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
+                        if (a.contains("(") || a.contains("\"")) {
+                                throw new Exception("Error: only identifiers allowed parameters in declaration of '" + id + "'");
+                        }
+                        String params = (a.isEmpty()) ? "" : "String " + a.replaceAll("\\s*,\\s*", ", String ");
+                        RESULT = "public static String " + id + "(" + a + ") {\nreturn " + e + ";\n}\n"; 
                 :}
 ;
 
-params ::= params_list:pl                               {: RESULT = pl; :}
+args ::= args_list:al                                   {: RESULT = al; :}
         | /* empty */                                   {: RESULT = ""; :}
 ;
 
-params_list ::= ID:id                                   {: RESULT = "String " + id; :}
-            | params_list:pl COMMA ID:id                {: RESULT = pl + ", String " + id; :}
+args_list ::= expr:e                                    {: RESULT = e; :}
+            | args_list:al COMMA expr:e                 {: RESULT = al + ", " + e; :}
 ;
 
 expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
@@ -87,12 +90,4 @@ statements ::= expr:e statements:s                      {: RESULT = "System.out.
 ;
 
 function_call ::= ID:id LPAREN args:a RPAREN            {: RESULT = id + "(" + a + ")"; :}
-;
-
-args ::= args_list:al                                   {: RESULT = al; :}
-        | /* empty */                                   {: RESULT = ""; :}
-;
-
-args_list ::= expr:e                                    {: RESULT = e; :}
-            | args_list:al COMMA expr:e                 {: RESULT = al + ", " + e; :}
 ;

@@ -69,14 +69,12 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
  "prefix"        { return symbol(sym.PREFIX); }
  "suffix"        { return symbol(sym.SUFFIX); }
 /* identifiers */
- [a-zA-Z][a-zA-Z0-9_]*          { System.out.println("TOKEN: " + yytext());
-                                 return symbol(sym.ID, yytext()); }
+ [a-zA-Z][a-zA-Z0-9_]*          { return symbol(sym.ID, yytext()); }
 /* operators */
  "+"            { return symbol(sym.CONCAT); }
  "("            { return symbol(sym.LPAREN); }
  ")"{WhiteSpace}*"{"   { return symbol(sym.RPAREN_LBRACE); }
- ")"            { System.out.println("TOKEN: " + yytext());
-                  return symbol(sym.RPAREN); }
+ ")"            { return symbol(sym.RPAREN); }
  "}"            { return symbol(sym.RBRACE); }
  ","            { return symbol(sym.COMMA); }
  \"             { stringBuffer.setLength(0); yybegin(STRING); } /*When " is found, Clear buffer+Switch to STRING state*/
