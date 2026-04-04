@@ -26,14 +26,15 @@ terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
 non terminal String program, functions, function_definition;
-non terminal String statements, expr, bool_expr, function_call;
+non terminal String statements, expr, function_call;
 non terminal String params, params_list, args, args_list;
 
 /**
  *  Precedence Declarations
  */
+precedence right IF;
+precedence left PREFIX, SUFFIX;
 precedence left CONCAT;
-precedence left IF;
 
 /**
  *  The Grammar Rules
@@ -72,17 +73,13 @@ params_list ::= ID:id                                   {: RESULT = "String " + 
 expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
         | ID:id                                         {: RESULT = id; :}
         | expr:e1 CONCAT expr:e2                        {: RESULT = e1 + " + " + e2; :}
-        | bool_expr:be                                  {: RESULT = be; :}
-        | IF LPAREN bool_expr:c RPAREN expr:e1 ELSE expr:e2  {: RESULT = c + "?" + e1 + ":" + e2; :}
+        | expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
+        | expr:e1 SUFFIX expr:e2                        {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
+        | IF LPAREN expr:c RPAREN expr:e1 ELSE expr:e2  {: RESULT = c + "?" + e1 + ":" + e2; :}
         | function_call:fc                              {: RESULT = fc; :}
 ;
 
-bool_expr ::= expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
-            | expr:e1 SUFFIX expr:e2                        {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
-            | ID
-;
-
-statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + s; :}
+statements ::= expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + e; :}
             | /* empty */                               {: RESULT = ""; :}
 ;
 
