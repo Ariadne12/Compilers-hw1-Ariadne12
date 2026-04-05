@@ -62,7 +62,7 @@ function_definition ::= ID:id LPAREN args:a RPAREN_LBRACE expr:e RBRACE
                                 throw new Exception("Error: only identifiers allowed parameters in declaration of '" + id + "'");
                         }
                         String params = (a.isEmpty()) ? "" : "String " + a.replaceAll("\\s*,\\s*", ", String ");
-                        RESULT = "public static String " + id + "(" + a + ") {\nreturn " + e + ";\n}\n"; 
+                        RESULT = "public static String " + id + "(" + params + ") {\nreturn " + e + ";\n}\n"; 
                 :}
 ;
 
