@@ -25,11 +25,10 @@ terminal            CONCAT, LPAREN, RPAREN, RPAREN_LBRACE, RBRACE, COMMA;
 terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
-non terminal String program, functions, function_definition;
+non terminal String program, defs_then_stmts, functions, function_definition;
 non terminal String statements, expr, function_call, cond;
-non terminal String args, args_list;
-non terminal String red_expr, red_cond, red_args, red_args_list, tl_function_call;
-
+non terminal String func_args_list, params, params_list;
+non terminal String stmt_expr, stmt_cond, stmt_args_list, stmt_function_call;
 /**
  *  Precedence Declarations
  */
@@ -40,39 +39,49 @@ precedence left CONCAT;
 /**
  *  The Grammar Rules
  */
-program ::= functions:f statements:s                    
-        {: RESULT = 
-            "public class Main {\n" + 
-            "public static void main(String[] args) {\n" + 
-            s +
-            "}\n\n" +
-            f +
-            "}\n";
-
-            System.out.println(RESULT);
+program ::= defs_then_stmts:ds
+        {:
+            System.out.print(ds);
+            RESULT = ds;
         :}
 ;
 
-functions ::= functions:f function_definition:fd        {: RESULT = f + fd + "\n"; :}
-           | /* empty */                                {: RESULT = ""; :}
+defs_then_stmts ::= /* empty */
+                        {:
+                        RESULT = 
+                        "public class Main {\n" + 
+                        "       public static void main(String[] args) {\n" + 
+                        "       }\n" +
+                        "}\n";
+                        :}
+                /* one more function defsaration (declarations-only so far) */
+                | defs_then_stmts:ds function_definition:fd
+                        {:
+                        /* delete "}\n" (the 2 last characters) and insert the new method */
+                        RESULT = ds.substring(0, ds.length() - 2) + "\n" + fd + "}\n";
+                        :}
+                /* first statement — transitions from declaration phase to statement phase */
+                | defs_then_stmts:ds stmt_expr:s
+                        {:
+                        /* insert the statement into main
+                        main's closing brace is "    }\n" and appears exactly once */
+                        int mainClose = ds.indexOf("    }\n");
+                        RESULT = ds.substring(0, mainClose) + s + ds.substring(mainClose);
+                        :}
 ;
 
-function_definition ::= ID:id LPAREN args:a RPAREN_LBRACE expr:e RBRACE
+function_definition ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
                 {: 
-                        if (a.contains("(") || a.contains("\"")) {
-                                throw new Exception("Error: only identifiers allowed parameters in declaration of '" + id + "'");
-                        }
-                        String params = (a.isEmpty()) ? "" : "String " + a.replaceAll("\\s*,\\s*", ", String ");
-                        RESULT = "public static String " + id + "(" + params + ") {\nreturn " + e + ";\n}\n"; 
+                        RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
                 :}
 ;
 
-args ::= args_list:al                                   {: RESULT = al; :}
-        | /* empty */                                   {: RESULT = ""; :}
+params ::= /* empty */                      {: RESULT = ""; :}
+        | params_list:pl                             {: RESULT = pl; :}
 ;
 
-args_list ::= expr:e                                    {: RESULT = e; :}
-            | args_list:al COMMA expr:e                 {: RESULT = al + ", " + e; :}
+params_list ::= ID:p                                  {: RESULT = "String " + p; :}
+                | params_list:pl COMMA ID:p           {: RESULT = pl + ", String " + p; :}
 ;
 
 expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
@@ -82,36 +91,38 @@ expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "
         | function_call:fc                              {: RESULT = fc; :}
 ;
 
+/*stmtuced expression, no ID */
+stmt_expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
+        | stmt_expr:e1 CONCAT stmt_expr:e2                        {: RESULT = e1 + " + " + e2; :}
+        | IF LPAREN stmt_cond:c RPAREN stmt_expr:e1 ELSE stmt_expr:e2  {: RESULT = "(" + "(" + c + ")" + "?" + e1 + ":" + e2 + ")"; :}
+        | stmt_function_call:fc                              {: RESULT = fc; :}
+;
+
 cond ::= expr:e1 SUFFIX expr:e2                         {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
         | expr:e1 PREFIX expr:e2                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
 ;
 
-function_call ::= ID:id LPAREN args:a RPAREN            {: RESULT = id + "(" + a + ")"; :}
+function_call ::= ID:id LPAREN func_args_list:al RPAREN            {: RESULT = id + "(" + al + ")"; :}
 ;
 
-/*reduced expression, no ID */
-red_expr ::= STRING_LITERAL:s                               {: RESULT = "\"" + s + "\""; :}
-        | red_expr:e1 CONCAT red_expr:e2                        {: RESULT = e1 + " + " + e2; :}
-        | IF LPAREN red_cond:c RPAREN red_expr:e1 ELSE red_expr:e2  {: RESULT = "(" + "(" + c + ")" + "?" + e1 + ":" + e2 + ")"; :}
-        | tl_function_call:fc                              {: RESULT = fc; :}
+stmt_cond ::= stmt_expr:e1 SUFFIX stmt_expr:e2                {: RESULT = "(" +  e2  + ")" + ".endsWith(" + e1 + ")"; :} 
+        | stmt_expr:e1 PREFIX stmt_expr:e2                {: RESULT = "(" + e2 + ")"  + ".startsWith(" + e1 + ")"; :}
 ;
 
-red_cond ::= red_expr:e1 SUFFIX red_expr:e2                {: RESULT = "(" +  e2  + ")" + ".endsWith(" + e1 + ")"; :} 
-        | red_expr:e1 PREFIX red_expr:e2                {: RESULT = "(" + e2 + ")"  + ".startsWith(" + e1 + ")"; :}
-;
-
-statements ::= red_expr:e statements:s                      {: RESULT = "System.out.println(" + e + ");\n" + s; :}
+statements ::= statements:s stmt_expr:e                      {: RESULT = s + "System.out.println(" + e + ");\n"; :}
             | /* empty */                               {: RESULT = ""; :}
 ;
 
-red_args ::= red_args_list:al                                   {: RESULT = al; :}
-        | /* empty */                                   {: RESULT = ""; :}
+stmt_function_call ::= ID:id LPAREN stmt_args_list:al RPAREN            {: RESULT = id + "(" + al + ")"; :}
 ;
 
-red_args_list ::= red_expr:e                                    {: RESULT = e; :}
-                | red_args_list:al COMMA red_expr:e                 {: RESULT = al + ", " + e; :}
+/* arguments inside a function body (identifiers allowed) */
+func_args_list ::= /* empty */                          {: RESULT = ""; :}
+                | expr:e                           {: RESULT = e; :}
+                | func_args_list:al COMMA expr:e    {: RESULT = al + ", " + e; :}
 ;
-
-/*top level fc */
-tl_function_call ::= ID:id LPAREN red_args:a RPAREN            {: RESULT = id + "(" + a + ")"; :}
+/* arguments at statement level (no bare identifiers) */
+stmt_args_list ::= /* empty */                          {: RESULT = ""; :}
+                | stmt_expr:e                           {: RESULT = e; :}
+                | stmt_args_list:al COMMA stmt_expr:e    {: RESULT = al + ", " + e; :}
 ;
