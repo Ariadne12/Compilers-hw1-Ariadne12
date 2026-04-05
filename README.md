@@ -15,7 +15,7 @@ Overview:
 That expression can be either a string, an identifier, a concatenation of 2 expressions, an if-else clause containing expressions or a function call with expressions as arguments
 However its parameters can only be identifers.
 - On the top level (the statements) however although the same things apply, no identifiers can be used.
-- either way an if condition can only be a prefix/suffix check and the clause μsomething that is of type string (so not prefix/suffix)
+- either way an if condition can only be a prefix/suffix check and the clause something that is of type string (so not prefix/suffix)
 
 
 Τα αποκάτω είναι κυρίως σημειώσεις μου καθώς εκανα την εργασία, αλλα όποιος διορθωτης θέλει μπορει να το διαβασει
