@@ -78,6 +78,7 @@ program ::= func_def_list:dl stmts:sl
         :}
 ;
 
+/* one or more definitions */
 func_def_list ::= func_def:fd                                           {: RESULT = fd; :}
                 | func_def_list:dl func_def:fd                          {: RESULT = dl + fd; :}
 ;
@@ -90,6 +91,7 @@ func_def ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
                 :}
 ;
 
+/* one or more statements */
 stmts ::= stmts:s stmt_expr:e                                           {: RESULT = s + "        System.out.println(" + e + ");\n"; :}
             | stmt_expr:s                                               {: RESULT = "        System.out.println(" + s + ");\n"; :}
 ;
@@ -102,6 +104,8 @@ params_list ::= ID:p                                                    {: RESUL
                 | params_list:pl COMMA ID:p                             {: RESULT = pl + ", String " + p; :}
 ;
 
+/* expressions inside function bodies */
+/* include identifiers */
 expr ::= STRING_LITERAL:s                                               {: RESULT = "\"" + s + "\""; :}
         | ID:id                                                         {: RESULT = id; :}
         | expr:e1 CONCAT expr:e2                                        {: RESULT = e1 + " + " + e2; :}
@@ -109,18 +113,18 @@ expr ::= STRING_LITERAL:s                                               {: RESUL
         | function_call:fc                                              {: RESULT = fc; :}
 ;
 
-/*stmtuced expression, no ID */
-stmt_expr ::= STRING_LITERAL:s                                          {: RESULT = "\"" + s + "\""; :}
-        | stmt_expr:e1 CONCAT stmt_expr:e2                              {: RESULT = e1 + " + " + e2; :}
-        | IF LPAREN stmt_cond:c RPAREN stmt_expr:e1 ELSE stmt_expr:e2   {: RESULT = "(" + "(" + c + ")" + "?" + e1 + ":" + e2 + ")"; :}
-        | stmt_function_call:fc                                         {: RESULT = fc; :}
-;
-
 cond ::= expr:e1 SUFFIX expr:e2                                         {: RESULT = e2 + ".endsWith(" + e1 + ")"; :}
         | expr:e1 PREFIX expr:e2                                        {: RESULT = e2 + ".startsWith(" + e1 + ")"; :}
 ;
 
 function_call ::= ID:id LPAREN func_args_list:al RPAREN                 {: RESULT = id + "(" + al + ")"; :}
+;
+
+/* expressions at the top level, no identifiers */
+stmt_expr ::= STRING_LITERAL:s                                          {: RESULT = "\"" + s + "\""; :}
+        | stmt_expr:e1 CONCAT stmt_expr:e2                              {: RESULT = e1 + " + " + e2; :}
+        | IF LPAREN stmt_cond:c RPAREN stmt_expr:e1 ELSE stmt_expr:e2   {: RESULT = "(" + "(" + c + ")" + "?" + e1 + ":" + e2 + ")"; :}
+        | stmt_function_call:fc                                         {: RESULT = fc; :}
 ;
 
 stmt_cond ::= stmt_expr:e1 SUFFIX stmt_expr:e2                          {: RESULT = "(" +  e2  + ")" + ".endsWith(" + e1 + ")"; :} 
