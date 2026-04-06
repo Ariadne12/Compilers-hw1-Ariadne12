@@ -50,8 +50,8 @@ defs_then_stmts ::= /* empty */
                         {:
                         RESULT = 
                         "public class Main {\n" + 
-                        "       public static void main(String[] args) {\n" + 
-                        "       }\n" +
+                        "    public static void main(String[] args) {\n" + 
+                        "    }\n" +
                         "}\n";
                         :}
                 /* one more function defsaration (declarations-only so far) */
@@ -66,13 +66,15 @@ defs_then_stmts ::= /* empty */
                         /* insert the statement into main
                         main's closing brace is "    }\n" and appears exactly once */
                         int mainClose = ds.indexOf("    }\n");
-                        RESULT = ds.substring(0, mainClose) + s + ds.substring(mainClose);
+                        RESULT = ds.substring(0, mainClose) + "        System.out.println(" + s + ");\n" + ds.substring(mainClose);
                         :}
 ;
 
 function_definition ::= ID:id LPAREN params:p RPAREN_LBRACE expr:e RBRACE
                 {: 
-                        RESULT = "public static String " + id + "(" + p + ") {\nreturn " + e + ";\n}\n"; 
+                        RESULT = "    public static String " + id + "(" + p + ") {\n" +
+                                "        return " + e + ";\n" +
+                                "    }\n";
                 :}
 ;
 
@@ -109,7 +111,7 @@ stmt_cond ::= stmt_expr:e1 SUFFIX stmt_expr:e2                {: RESULT = "(" + 
         | stmt_expr:e1 PREFIX stmt_expr:e2                {: RESULT = "(" + e2 + ")"  + ".startsWith(" + e1 + ")"; :}
 ;
 
-statements ::= statements:s stmt_expr:e                      {: RESULT = s + "System.out.println(" + e + ");\n"; :}
+statements ::= statements:s stmt_expr:e                      {: RESULT = s + "      System.out.println(" + e + ");\n"; :}
             | /* empty */                               {: RESULT = ""; :}
 ;
 
@@ -121,7 +123,7 @@ func_args_list ::= /* empty */                          {: RESULT = ""; :}
                 | expr:e                           {: RESULT = e; :}
                 | func_args_list:al COMMA expr:e    {: RESULT = al + ", " + e; :}
 ;
-/* arguments at statement level (no bare identifiers) */
+/* arguments at statement level (no identifiers) */
 stmt_args_list ::= /* empty */                          {: RESULT = ""; :}
                 | stmt_expr:e                           {: RESULT = e; :}
                 | stmt_args_list:al COMMA stmt_expr:e    {: RESULT = al + ", " + e; :}
