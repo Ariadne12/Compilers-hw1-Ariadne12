@@ -25,8 +25,8 @@ terminal            CONCAT, LPAREN, RPAREN, RPAREN_LBRACE, RBRACE, COMMA;
 terminal String     ID, STRING_LITERAL;
 
 /*  Non terminals */
-non terminal String program, func_def_list, func_def;
-non terminal String stmts, expr, function_call, cond;
+non terminal String program, func_def_list, stmts;
+non terminal String func_def, expr, function_call, cond;
 non terminal String func_args_list, params, params_list;
 non terminal String stmt_expr, stmt_cond, stmt_args_list, stmt_function_call;
 /**
